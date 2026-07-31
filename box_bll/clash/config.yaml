@@ -390,6 +390,7 @@ proxy-groups:
     <<: *A
 # —————————
 # ==== 用户分流配置开始（模块更新时自动保留） ====
+# 用户分流配置版本: ACL4SSR_Online_Full_v1
 # 可直接修改本区的 provider URL、策略和顺序。ACL4SSR 使用可读的 text/yaml，
 # 不依赖 .mrs 二进制规则。规则来源: https://github.com/ACL4SSR/ACL4SSR
 rule-anchor:

@@ -18,6 +18,7 @@ CTR_PATH="/data/misc/net/rt_tables"
 CONFIG_FILE="$BOX_BLL_PATH/clash/config.yaml"
 BACKUP_FILE="$BOX_BLL_PATH/clash/proxies/subscribe_urls_backup.txt"
 ROUTING_BACKUP_FILE="$BOX_BLL_PATH/clash/etc/routing_config_backup.yaml"
+CONTROLLER_BACKUP_FILE="$BOX_BLL_PATH/clash/etc/external_controller_port_backup.txt"
 INSTALL_DIR="/data/app"
 HOSTS_FILE="$BOX_BLL_PATH/clash/etc/hosts"
 HOSTS_PATH="$BOX_BLL_PATH/clash/etc"
@@ -82,11 +83,11 @@ extract_routing_config() {
   [ -f "$CONFIG_FILE" ] || return
 
   sed -n '/# ==== 用户分流配置开始/,/# ==== 用户分流配置结束/p' "$CONFIG_FILE" > "$ROUTING_BACKUP_FILE"
-  if grep -q '# ==== 用户分流配置开始' "$ROUTING_BACKUP_FILE" && grep -q '# ==== 用户分流配置结束' "$ROUTING_BACKUP_FILE"; then
+  if grep -q '# 用户分流配置版本: ACL4SSR_Online_Full_v1' "$ROUTING_BACKUP_FILE" && grep -q '# ==== 用户分流配置结束' "$ROUTING_BACKUP_FILE"; then
     ui_print "Backed up custom routing configuration."
   else
     : > "$ROUTING_BACKUP_FILE"
-    ui_print "No custom routing block found. Using the new default."
+    ui_print "Legacy routing block found. Using the new ACL4SSR default."
   fi
 }
 
@@ -118,6 +119,48 @@ install_custom_rule_files() {
 
     cp -f "$source_file" "$target_file"
   done
+}
+
+extract_controller_port() {
+  [ -f "$CONFIG_FILE" ] || return
+
+  controller_port=$(awk '/^[[:space:]]*external-controller:/ {
+    sub(/#.*/, "")
+    gsub(/["[:space:]]/, "")
+    count = split($0, parts, ":")
+    print parts[count]
+    exit
+  }' "$CONFIG_FILE")
+
+  # Recover a non-default port from the previous update when the last module
+  # version has already overwritten the active config with 9090.
+  old_controller_port=$(awk '/^[[:space:]]*external-controller:/ {
+    sub(/#.*/, "")
+    gsub(/["[:space:]]/, "")
+    count = split($0, parts, ":")
+    print parts[count]
+    exit
+  }' "$CONFIG_FILE.bak" 2>/dev/null)
+  if [ "$controller_port" = "9090" ] && [ -n "$old_controller_port" ] && [ "$old_controller_port" != "9090" ]; then
+    controller_port="$old_controller_port"
+  fi
+
+  case "$controller_port" in
+    ''|*[!0-9]*) : > "$CONTROLLER_BACKUP_FILE" ;;
+    *) printf '%s\n' "$controller_port" > "$CONTROLLER_BACKUP_FILE" ;;
+  esac
+}
+
+restore_controller_port() {
+  [ -s "$CONTROLLER_BACKUP_FILE" ] || return
+  controller_port=$(sed -n '1p' "$CONTROLLER_BACKUP_FILE")
+  case "$controller_port" in
+    ''|*[!0-9]*) return ;;
+  esac
+
+  sed -E "s#^[[:space:]]*external-controller:.*#external-controller: 0.0.0.0:${controller_port}#" \
+    "$CONFIG_FILE" > "$CONFIG_FILE.tmp" && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+  ui_print "Preserved Clash API port: ${controller_port}"
 }
 
 remove_legacy_rule_files() {
@@ -237,6 +280,7 @@ if [ -d "$BOX_BLL_PATH" ]; then
   mkdir -p "$BOX_BLL_PATH/clash/proxies" "$HOSTS_PATH"
   extract_subscribe_urls
   extract_routing_config
+  extract_controller_port
 
   [ -f "$HOSTS_FILE" ] && cp -f "$HOSTS_FILE" "$HOSTS_BACKUP"
   touch "$HOSTS_FILE"
@@ -266,6 +310,7 @@ if [ -d "$BOX_BLL_PATH" ]; then
 
   restore_subscribe_urls
   restore_routing_config
+  restore_controller_port
 
   for pid in $(pidof inotifyd); do
     if [ -f "/proc/${pid}/cmdline" ] && grep -qE "box.inotify|net.inotify|ctr.inotify" "/proc/${pid}/cmdline"; then

@@ -142,6 +142,8 @@
    - `proxies/subscribe_urls_backup.txt`
    - 自动提取备份并恢复至新配置中，适用于使用默认配置文件
 - `config.yaml` 中的“用户分流配置”区会单独备份和恢复，因此规则源、规则顺序和策略组映射可放心自定义
+- 分流配置带有版本标记；从旧版简化规则升级时会自动放弃不兼容的旧分流块，避免引用已删除的策略组
+- `external-controller` 的 API 端口也会在升级时保留；默认端口是 `9090`，如果之前使用 `9091`，升级后仍会继续使用 `9091`
 - 升级时会删除旧版 `.mrs`、WebRTC 与旧自定义规则文件，只保留 ACL4SSR 的规则缓存；新的三个自定义文件默认均为空模板
 
 > Ps：主要跟随上游更新，及下发一些配置
@@ -176,6 +178,7 @@
 
 ### 路由规则
 - 默认完整实现 [ACL4SSR_Online_Full](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/config/ACL4SSR_Online_Full.ini)：使用其全部 31 个远程规则集、完整业务策略组和地区/奈飞节点组，不再依赖不可直接编辑的 `.mrs` 文件。规则提供者位于 `/data/adb/box_bll/clash/config.yaml` 底部的“用户分流配置”区，可修改 URL、顺序和最终策略组。
+- 构建模块时会下载并打包全部 31 个 ACL4SSR 文本规则，确保全新安装首次启动不依赖在线拉取规则；之后仍由 Mihomo 按配置中的更新周期自动更新。
 - 可直接编辑以下本地文本规则，一行一条，采用 Clash Classical 规则格式；它们的优先级高于 ACL4SSR：
   - `/data/adb/box_bll/clash/etc/自定义直连.list`：强制直连
   - `/data/adb/box_bll/clash/etc/自定义代理.list`：交给“🚀 节点选择”策略组

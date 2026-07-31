@@ -166,7 +166,14 @@ display_bin_status() {
 }
 
 clear_port_blockers() {
-    check_ports="${redir_port} ${tproxy_port} ${clash_dns_port} 7890"
+    controller_port=$(awk '/^[[:space:]]*external-controller:/ {
+        sub(/#.*/, "")
+        gsub(/["[:space:]]/, "")
+        count = split($0, parts, ":")
+        print parts[count]
+        exit
+    }' "${box_path}/${bin_name}/config.yaml")
+    check_ports="${redir_port} ${tproxy_port} ${clash_dns_port} 7890 ${controller_port}"
     ss_cache=$(/system/bin/ss -tulnp 2>/dev/null)
 
     for port in $check_ports; do

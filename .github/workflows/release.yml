@@ -42,6 +42,8 @@ jobs:
           grep -Eq '^\.?/?customize\.sh$' archive-files.txt
           grep -Eq '^\.?/?META-INF/com/google/android/update-binary$' archive-files.txt
           grep -Eq '^\.?/?box_bll/clash/config\.yaml$' archive-files.txt
+          grep -Eq '^\.?/?box_bll/clash/webroot/Zash/index\.html$' archive-files.txt
+          test "$(grep -Ec '^\.?/?box_bll/clash/rules/ACL4SSR_.*\.list$' archive-files.txt)" -eq 31
           echo "Verified module archive: $archive"
 
       - name: Upload module artifact

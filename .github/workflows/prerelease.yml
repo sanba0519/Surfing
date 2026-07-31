@@ -2,6 +2,7 @@ name: prerelease
 run-name: ${{ github.event.head_commit.message || 'Scheduled Run' }}
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

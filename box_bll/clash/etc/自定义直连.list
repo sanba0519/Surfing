@@ -1,0 +1,6 @@
+# 自定义直连规则，Classical / Text 格式，一行一条。
+# 修改后在面板重载配置，或重启 Surfing 服务。
+# 示例（删除行首 # 即可启用）：
+# DOMAIN-SUFFIX,example.cn
+# DOMAIN,api.example.cn
+# IP-CIDR,192.168.0.0/16,no-resolve

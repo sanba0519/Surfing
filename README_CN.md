@@ -141,6 +141,8 @@
 - 更新时会自动提取你的订阅地址并备份，至
    - `proxies/subscribe_urls_backup.txt`
    - 自动提取备份并恢复至新配置中，适用于使用默认配置文件
+- `config.yaml` 中的“用户分流配置”区会单独备份和恢复，因此规则源、规则顺序和策略组映射可放心自定义
+- 升级时会删除旧版 `.mrs`、WebRTC 与旧自定义规则文件，只保留 ACL4SSR 的规则缓存；新的三个自定义文件默认均为空模板
 
 > Ps：主要跟随上游更新，及下发一些配置
 
@@ -173,10 +175,12 @@
 > 如特殊需要可自行通过配置关闭
 
 ### 路由规则
-- 为大陆饶行
-- 基本能满足大多数日常使用需求
-
-> 在分流规则日益健壮的情况下 黑白名单意义不大
+- 默认完整实现 [ACL4SSR_Online_Full](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/config/ACL4SSR_Online_Full.ini)：使用其全部 31 个远程规则集、完整业务策略组和地区/奈飞节点组，不再依赖不可直接编辑的 `.mrs` 文件。规则提供者位于 `/data/adb/box_bll/clash/config.yaml` 底部的“用户分流配置”区，可修改 URL、顺序和最终策略组。
+- 可直接编辑以下本地文本规则，一行一条，采用 Clash Classical 规则格式；它们的优先级高于 ACL4SSR：
+  - `/data/adb/box_bll/clash/etc/自定义直连.list`：强制直连
+  - `/data/adb/box_bll/clash/etc/自定义代理.list`：交给“🚀 节点选择”策略组
+  - `/data/adb/box_bll/clash/etc/自定义拒绝.list`：拒绝连接
+- 修改后在面板执行“重载配置”或重启 Surfing 服务。模块升级会保留上述本地规则文件和整个用户分流配置区。
 
 ### 面板管理
 - Magisk字体模块

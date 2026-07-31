@@ -1,0 +1,5 @@
+# 自定义拒绝规则，Classical / Text 格式，一行一条。
+# 此文件中的规则固定拒绝连接。
+# 示例（删除行首 # 即可启用）：
+# DOMAIN-SUFFIX,ads.example.com
+# DOMAIN-KEYWORD,analytics

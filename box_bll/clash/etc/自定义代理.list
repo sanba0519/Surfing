@@ -1,0 +1,6 @@
+# 自定义代理规则，Classical / Text 格式，一行一条。
+# 此文件中的规则固定交给“🚀 节点选择”策略组。
+# 示例（删除行首 # 即可启用）：
+# DOMAIN-SUFFIX,example.com
+# DOMAIN-KEYWORD,google
+# IP-CIDR,8.8.8.8/32,no-resolve

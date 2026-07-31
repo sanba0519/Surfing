@@ -17,6 +17,7 @@ NET_PATH="/data/misc/net"
 CTR_PATH="/data/misc/net/rt_tables"
 CONFIG_FILE="$BOX_BLL_PATH/clash/config.yaml"
 BACKUP_FILE="$BOX_BLL_PATH/clash/proxies/subscribe_urls_backup.txt"
+ROUTING_BACKUP_FILE="$BOX_BLL_PATH/clash/etc/routing_config_backup.yaml"
 INSTALL_DIR="/data/app"
 HOSTS_FILE="$BOX_BLL_PATH/clash/etc/hosts"
 HOSTS_PATH="$BOX_BLL_PATH/clash/etc"
@@ -75,6 +76,57 @@ restore_subscribe_urls() {
   else
     ui_print "No valid backup found. Skipped restore."
   fi
+}
+
+extract_routing_config() {
+  [ -f "$CONFIG_FILE" ] || return
+
+  sed -n '/# ==== 用户分流配置开始/,/# ==== 用户分流配置结束/p' "$CONFIG_FILE" > "$ROUTING_BACKUP_FILE"
+  if grep -q '# ==== 用户分流配置开始' "$ROUTING_BACKUP_FILE" && grep -q '# ==== 用户分流配置结束' "$ROUTING_BACKUP_FILE"; then
+    ui_print "Backed up custom routing configuration."
+  else
+    : > "$ROUTING_BACKUP_FILE"
+    ui_print "No custom routing block found. Using the new default."
+  fi
+}
+
+restore_routing_config() {
+  [ -s "$ROUTING_BACKUP_FILE" ] || return
+
+  awk -v backup="$ROUTING_BACKUP_FILE" '
+    BEGIN { skip = 0 }
+    /# ==== 用户分流配置开始/ {
+      skip = 1
+      while ((getline < backup) > 0) { print }
+      close(backup)
+      next
+    }
+    /# ==== 用户分流配置结束/ {
+      skip = 0
+      next
+    }
+    !skip { print }
+  ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp" && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+  ui_print "Restored custom routing configuration."
+}
+
+install_custom_rule_files() {
+  for rule_file in 自定义直连.list 自定义代理.list 自定义拒绝.list; do
+    source_file="$MODPATH/box_bll/clash/etc/$rule_file"
+    target_file="$HOSTS_PATH/$rule_file"
+    [ -f "$target_file" ] && continue
+
+    cp -f "$source_file" "$target_file"
+  done
+}
+
+remove_legacy_rule_files() {
+  legacy_rules_dir="$BOX_BLL_PATH/clash/rules"
+  rm -f "$HOSTS_PATH/自定义规则.list"
+  [ -d "$legacy_rules_dir" ] || return
+
+  find "$legacy_rules_dir" -maxdepth 1 -type f \( -name '*.mrs' -o -name 'WebRTC.list' \) -exec rm -f {} \;
+  ui_print "Removed legacy rule assets."
 }
 
 install_surfingtile_apk() {
@@ -182,16 +234,20 @@ if [ -d "$BOX_BLL_PATH" ]; then
   cp -f "$MODPATH/box_bll/bin/busybox" "$BIN_PATH/busybox" && init_busybox_toolchain
 
   [ "$INSTALL_TILE" = "true" ] && install_surfingtile_module && install_surfingtile_apk
+  mkdir -p "$BOX_BLL_PATH/clash/proxies" "$HOSTS_PATH"
   extract_subscribe_urls
+  extract_routing_config
 
   [ -f "$HOSTS_FILE" ] && cp -f "$HOSTS_FILE" "$HOSTS_BACKUP"
-  mkdir -p "$HOSTS_PATH" && touch "$HOSTS_FILE"
+  touch "$HOSTS_FILE"
 
   cp "$BOX_BLL_PATH/clash/config.yaml" "$BOX_BLL_PATH/clash/config.yaml.bak"
   cp "$BOX_BLL_PATH/scripts/box.config" "$BOX_BLL_PATH/scripts/box.config.bak"
   cp -f "$MODPATH/box_bll/clash/config.yaml" "$BOX_BLL_PATH/clash/"
   cp -f "$MODPATH/box_bll/clash/Toolbox.sh" "$BOX_BLL_PATH/clash/"
   cp -f "$MODPATH/box_bll/scripts/"* "$BOX_BLL_PATH/scripts/"
+  install_custom_rule_files
+  remove_legacy_rule_files
 
   OLD_CONFIG="$BOX_BLL_PATH/scripts/box.config.bak"
   NEW_CONFIG="$BOX_BLL_PATH/scripts/box.config"
@@ -209,6 +265,7 @@ if [ -d "$BOX_BLL_PATH" ]; then
   fi
 
   restore_subscribe_urls
+  restore_routing_config
 
   for pid in $(pidof inotifyd); do
     if [ -f "/proc/${pid}/cmdline" ] && grep -qE "box.inotify|net.inotify|ctr.inotify" "/proc/${pid}/cmdline"; then

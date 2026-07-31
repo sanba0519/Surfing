@@ -146,17 +146,17 @@ dns:
   fake-ip-range6: fdfe:dcba:9876::/64
   enhanced-mode: fake-ip # redir-host
   fake-ip-filter:
-    - "RULE-SET:CN_域"
-    - "RULE-SET:Private_域"
-    - "RULE-SET:GoogleFCM_域"
-    - "RULE-SET:自定义规则"
+    - "RULE-SET:ACL4SSR_中国域名"
+    - "RULE-SET:ACL4SSR_局域网"
+    - "RULE-SET:ACL4SSR_GoogleFCM"
+    - "RULE-SET:自定义直连"
   proxy-server-nameserver:
     - https://1.12.12.12:443/dns-query#🌐 本机·本地直连&h3=false
     - https://120.53.53.53:443/dns-query#🌐 本机·本地直连&h3=false
     - https://223.5.5.5:443/dns-query#🌐 本机·本地直连&h3=true
     - https://223.6.6.6:443/dns-query#🌐 本机·本地直连&h3=true
   nameserver-policy:
-    "RULE-SET:CN_域,Microsoft_域,Apple_域":
+    "RULE-SET:ACL4SSR_中国域名,ACL4SSR_Microsoft,ACL4SSR_Apple":
       - https://1.12.12.12:443/dns-query#🌐 本机·本地直连&h3=false
       - https://120.53.53.53:443/dns-query#🌐 本机·本地直连&h3=false
       - https://223.5.5.5:443/dns-query#🌐 本机·本地直连&h3=true
@@ -177,345 +177,401 @@ proxies:
   - {name: 🌐 本机·本地直连, type: direct, udp: true}
   - {name: ⛔️ 禁止·拒绝连接, type: reject}
   - {name: 🌐 DNS_Hijack, type: dns}
-proxy_groups: &proxy_groups
+acl_policy: &acl_policy
     type: select
     proxies:
-      - 总模式
-      - ALL·延迟最低
-      - ALL·负载均衡
-      - ALL·故障转移
-      - ALL·中国台湾
-      - ALL·香港地区
-      - ALL·美国地区
-      - ALL·日本地区
-      - ALL·狮城地区
-      - ALL·其它地区
-      - ⛔️ 禁止·拒绝连接
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇭🇰 香港节点
+      - 🇨🇳 台湾节点
+      - 🇸🇬 狮城节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇰🇷 韩国节点
+      - 🚀 手动切换
       - 🌐 本机·本地直连
+    <<: *A
+acl_direct_policy: &acl_direct_policy
+    type: select
+    proxies:
+      - 🌐 本机·本地直连
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇺🇲 美国节点
+      - 🇭🇰 香港节点
+      - 🇨🇳 台湾节点
+      - 🇸🇬 狮城节点
+      - 🇯🇵 日本节点
+      - 🇰🇷 韩国节点
+      - 🚀 手动切换
     <<: *A
 # —————————
 proxy-groups:
-  - name: 总模式
+  - name: 🚀 节点选择
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/All.svg"
     type: select
     proxies:
-      - ALL·延迟最低
-      - ALL·负载均衡
-      - ALL·故障转移
-      - ALL·日本地区
-      - ALL·中国台湾
-      - ALL·香港地区  
-      - ALL·美国地区
-      - ALL·狮城地区
-      - ALL·其它地区
+      - ♻️ 自动选择
+      - 🇭🇰 香港节点
+      - 🇨🇳 台湾节点
+      - 🇸🇬 狮城节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇰🇷 韩国节点
+      - 🚀 手动切换
       - 🌐 本机·本地直连
   - name: 订阅更新
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Update.svg"
     type: select
     proxies:
       - 🌐 本机·本地直连
-      - 总模式
-  - name: 小红书
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/XiaoHongShu.svg"
-    <<: *proxy_groups
-  - name: 抖音
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/DouYin.svg"
-    <<: *proxy_groups
-  - name: BiliBili
+      - 🚀 节点选择
+  - name: 📺 哔哩哔哩
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/BiliBili.svg"
-    <<: *proxy_groups
-  - name: Steam
+    type: select
+    proxies:
+      - 🌐 本机·本地直连
+      - 🇨🇳 台湾节点
+      - 🇭🇰 香港节点
+  - name: 🎮 游戏平台
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Steam.svg"
-    <<: *proxy_groups
-  - name: Apple
+    <<: *acl_direct_policy
+  - name: 🍎 苹果服务
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Apple.svg"
-    <<: *proxy_groups
-  - name: Microsoft
+    <<: *acl_direct_policy
+  - name: Ⓜ️ 微软服务
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Microsoft.svg"
-    <<: *proxy_groups
-  - name: Telegram
+    <<: *acl_direct_policy
+  - name: 📲 电报消息
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Telegram.svg"
-    <<: *proxy_groups
-  - name: Discord
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Discord.svg"
-    <<: *proxy_groups
-  - name: Spotify
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Spotify.svg"
-    <<: *proxy_groups
-  - name: TikTok
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/TikTok.svg"
-    <<: *proxy_groups
-  - name: YouTube
+    <<: *acl_policy
+  - name: 📹 油管视频
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/YouTube.svg"
-    <<: *proxy_groups
-  - name: Netflix
+    <<: *acl_policy
+  - name: 🎥 奈飞视频
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Netflix.svg"
-    <<: *proxy_groups
-  - name: Google
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Google.svg"
-    <<: *proxy_groups
-  - name: GoogleFCM
+    type: select
+    proxies:
+      - 🎥 奈飞节点
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇸🇬 狮城节点
+      - 🇭🇰 香港节点
+      - 🇨🇳 台湾节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇰🇷 韩国节点
+      - 🚀 手动切换
+      - 🌐 本机·本地直连
+  - name: 📢 谷歌FCM
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/GoogleFCM.svg"
-    <<: *proxy_groups
-  - name: Facebook
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Facebook.svg"
-    <<: *proxy_groups
-  - name: OpenAI
+    <<: *acl_direct_policy
+  - name: 💬 Ai平台
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/OpenAI.svg"
-    <<: *proxy_groups
-  - name: GitHub
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/GitHub.svg"
-    <<: *proxy_groups
-  - name: Twitter(X)
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Twitter.svg"
-    <<: *proxy_groups
+    <<: *acl_policy
+  - name: Ⓜ️ 微软Bing
+    <<: *acl_direct_policy
+  - name: Ⓜ️ 微软云盘
+    <<: *acl_direct_policy
+  - name: 📺 巴哈姆特
+    type: select
+    proxies:
+      - 🇨🇳 台湾节点
+      - 🚀 节点选择
+      - 🚀 手动切换
+      - 🌐 本机·本地直连
+  - name: 🌍 国外媒体
+    <<: *acl_policy
+  - name: 🌏 国内媒体
+    type: select
+    proxies:
+      - 🌐 本机·本地直连
+      - 🇭🇰 香港节点
+      - 🇨🇳 台湾节点
+      - 🇸🇬 狮城节点
+      - 🇯🇵 日本节点
+      - 🚀 手动切换
+  - name: 🎶 网易音乐
+    type: select
+    proxies:
+      - 🌐 本机·本地直连
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🚀 手动切换
+    filter: "(?i)(网易|音乐|解锁|Music|NetEase)"
+    <<: *A
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - 🌐 本机·本地直连
+      - 🚀 节点选择
+      - ♻️ 自动选择
+  - name: 🍃 应用净化
+    type: select
+    proxies:
+      - ⛔️ 禁止·拒绝连接
+      - 🌐 本机·本地直连
   - name: DNS连接
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/DNS.svg"
-    <<: *proxy_groups
-  - name: 漏网之鱼
+    <<: *acl_policy
+  - name: 🐟 漏网之鱼
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/HBASE-copy.svg"
-    <<: *proxy_groups
-  - name: 广告拦截
+    <<: *acl_policy
+  - name: 🛑 广告拦截
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/No-ads-all.svg"
     type: select
     proxies:
-      - PASS
-      - REJECT-DROP 
       - ⛔️ 禁止·拒绝连接
-      - 🌐 DNS_Hijack
-  - name: WebRTC
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/WebRTC.svg"
-    type: select
-    proxies:
-      - ⛔️ 禁止·拒绝连接
-      - 🌐 DNS_Hijack
-      - REJECT-DROP
-      - PASS
-  - name: ALL·延迟最低
+      - 🌐 本机·本地直连
+  - name: ♻️ 自动选择
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Return.svg"
     type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
     <<: *A
-  - name: ALL·负载均衡
+  - name: 🚀 手动切换
     icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Return.svg"
-    type: load-balance
-    strategy: round-robin
-    <<: *A
-  - name: ALL·故障转移
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Return.svg"
-    type: fallback
-    <<: *A
-  - name: ALL·日本地区
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/JP.svg"
-    filter: "(?i)(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|jp|japan)"
-    <<: *All
-  - name: ALL·中国台湾
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/CN.svg"
-    filter: "(?i)(台|新北|彰化|tw|taiwan|taipei)"
-    <<: *All
-  - name: ALL·香港地区
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/HK.svg"
-    filter: "(?i)(港|hk|hong ?kong)"
-    <<: *All
-  - name: ALL·美国地区
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/US.svg"
-    filter: "(?i)(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|us|united ?states)"
-    <<: *All
-  - name: ALL·狮城地区
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Singapore.svg"
-    filter: "(?i)(新加坡|坡|狮城|sg|singapore)"
-    <<: *All
-  - name: ALL·其它地区
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Globe.svg"
-    filter: ".*"
-    exclude-filter: "(?i)(港|hk|hong ?kong|日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|jp|japan|美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|us|united ?states|台|新北|彰化|tw|taiwan|taipei|新加坡|坡|狮城|sg|singapore|灾|网易|netease|套餐|重置|剩余|到期|订阅|群|账户|流量|有效期|时间|官网|拒绝|dns|ch|网址|售|防失)"
-    <<: *All
-  - name: 特殊地址
-    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/User.svg"
     type: select
-    url: https://www.baidu.com/favicon.ico
-    interval: *Time
-    proxies:
-      - 🌐 本机·本地直连
-      - ⛔️ 禁止·拒绝连接
+    filter: ".*"
+    <<: *A
+  - name: 🎥 奈飞节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Return.svg"
+    type: select
+    filter: "(?i)(NF|奈飞|解锁|Netflix|NETFLIX|Media)"
+    <<: *A
+  - name: 🇯🇵 日本节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/JP.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    filter: "(?i)(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|jp|japan)"
+    <<: *A
+  - name: 🇨🇳 台湾节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/CN.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    filter: "(?i)(台|新北|彰化|tw|taiwan)"
+    <<: *A
+  - name: 🇭🇰 香港节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/HK.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    filter: "(?i)(港|HK|Hong Kong|HongKong|hongkong)"
+    <<: *A
+  - name: 🇺🇲 美国节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/US.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 150
+    filter: "(?i)(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|us|united ?states)"
+    <<: *A
+  - name: 🇸🇬 狮城节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Singapore.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    filter: "(?i)(新加坡|坡|狮城|sg|singapore)"
+    <<: *A
+  - name: 🇰🇷 韩国节点
+    icon: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Globe.svg"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    filter: "(?i)(KR|Korea|KOR|首尔|韩|韓)"
+    <<: *A
 # —————————
+# ==== 用户分流配置开始（模块更新时自动保留） ====
+# 可直接修改本区的 provider URL、策略和顺序。ACL4SSR 使用可读的 text/yaml，
+# 不依赖 .mrs 二进制规则。规则来源: https://github.com/ACL4SSR/ACL4SSR
 rule-anchor:
   Local: &Local
     {type: file, behavior: classical, format: text}
-  Classical: &Classical
+  ACL4SSR: &ACL4SSR
     {type: http, behavior: classical, format: text, interval: *Time}
-  IPCIDR: &IPCIDR
-    {type: http, behavior: ipcidr, format: mrs, interval: *Time}
-  Domain: &Domain
-    {type: http, behavior: domain, format: mrs, interval: *Time}
 # —————————
-# Github Actions 每日自动同步跟随更新
-# 规则提供者: https://github.com/MetaCubeX/meta-rules-dat
 rule-providers:
-  自定义规则: # 主要用于广告/业务误杀自定义放行
+  自定义直连:
     <<: *Local
-    path: ./etc/自定义规则.list
-  WebRTC_端/域:
-    <<: *Classical
-    path: ./rules/WebRTC.list
-    url: "https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/box_bll/clash/rules/WebRTC.list"
-  CN_IP:
-    <<: *IPCIDR
-    path: ./rules/CN_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/cn.mrs"
-  CN_域:
-    <<: *Domain
-    path: ./rules/CN_域.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs"
-  No-ads-all_域:
-    <<: *Domain
-    path: ./rules/No-ads-all.mrs
-    url: "https://cdn.jsdelivr.net/gh/TG-Twilight/AWAvenue-Ads-Rule@main/Filters/AWAvenue-Ads-Rule-Clash.mrs"
-  XiaoHongShu_域:
-    <<: *Domain
-    path: ./rules/XiaoHongShu.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/xiaohongshu.mrs"
-  DouYin_域:
-    <<: *Domain
-    path: ./rules/DouYin.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/douyin.mrs"
-  BiliBili_域:
-    <<: *Domain
-    path: ./rules/BiliBili.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/bilibili.mrs"
-  BiliBili_IP:
-    <<: *IPCIDR
-    path: ./rules/BiliBili_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/bilibili.mrs"
-  Steam_域:
-    <<: *Domain
-    path: ./rules/Steam.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs"
-  TikTok_域:
-    <<: *Domain
-    path: ./rules/TikTok.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs"
-  Spotify_域:
-    <<: *Domain
-    path: ./rules/Spotify.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/spotify.mrs"
-  Facebook_域:
-    <<: *Domain
-    path: ./rules/Facebook.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/facebook.mrs"
-  Facebook_IP:
-    <<: *IPCIDR
-    path: ./rules/Facebook_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/facebook.mrs"
-  Telegram_域:
-    <<: *Domain
-    path: ./rules/Telegram.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"
-  Telegram_IP:
-    <<: *IPCIDR
-    path: ./rules/Telegram_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/telegram.mrs"
-  YouTube_域:
-    <<: *Domain
-    path: ./rules/YouTube.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs"
-  Google_域:
-    <<: *Domain
-    path: ./rules/Google.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs"
-  Google_IP:
-    <<: *IPCIDR
-    path: ./rules/Google_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/google.mrs"
-  GoogleFCM_域:
-    <<: *Domain
-    path: ./rules/GoogleFCM.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/googlefcm.mrs"
-  Microsoft_域:
-    <<: *Domain
-    path: ./rules/Microsoft.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs"
-  Apple_域:
-    <<: *Domain
-    path: ./rules/Apple.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs"
-  Apple_IP:
-    <<: *IPCIDR
-    path: ./rules/Apple_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/apple.mrs"
-  OpenAI_域:
-    <<: *Domain
-    path: ./rules/OpenAI.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs"
-  Netflix_域:
-    <<: *Domain
-    path: ./rules/Netflix.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs"
-  Netflix_IP:
-    <<: *IPCIDR
-    path: ./rules/Netflix_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/netflix.mrs"
-  Discord_域:
-    <<: *Domain
-    path: ./rules/Discord.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/discord.mrs"
-  GitHub_域:
-    <<: *Domain
-    path: ./rules/GitHub.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/github.mrs"
-  Twitter_域:
-    <<: *Domain
-    path: ./rules/Twitter.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/twitter.mrs"
-  Twitter_IP:
-    <<: *IPCIDR
-    path: ./rules/Twitter_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/twitter.mrs"
-  Private_域:
-    <<: *Domain
-    path: ./rules/Private.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs"
-  Private_IP:
-    <<: *IPCIDR
-    path: ./rules/Private_IP.mrs
-    url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo-lite/geoip/private.mrs"
+    path: ./etc/自定义直连.list
+  自定义代理:
+    <<: *Local
+    path: ./etc/自定义代理.list
+  自定义拒绝:
+    <<: *Local
+    path: ./etc/自定义拒绝.list
+  ACL4SSR_局域网:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_LocalAreaNetwork.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/LocalAreaNetwork.list"
+  ACL4SSR_白名单:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_UnBan.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/UnBan.list"
+  ACL4SSR_广告:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_BanAD.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/BanAD.list"
+  ACL4SSR_应用广告:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_BanProgramAD.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/BanProgramAD.list"
+  ACL4SSR_GoogleFCM:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_GoogleFCM.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/GoogleFCM.list"
+  ACL4SSR_GoogleCN:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_GoogleCN.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/GoogleCN.list"
+  ACL4SSR_SteamCN:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_SteamCN.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/SteamCN.list"
+  ACL4SSR_Bing:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Bing.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Bing.list"
+  ACL4SSR_OneDrive:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_OneDrive.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/OneDrive.list"
+  ACL4SSR_Microsoft:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Microsoft.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Microsoft.list"
+  ACL4SSR_Apple:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Apple.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Apple.list"
+  ACL4SSR_Telegram:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Telegram.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Telegram.list"
+  ACL4SSR_AI:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_AI.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/AI.list"
+  ACL4SSR_OpenAI:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_OpenAI.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/OpenAi.list"
+  ACL4SSR_NetEaseMusic:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_NetEaseMusic.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/NetEaseMusic.list"
+  ACL4SSR_Epic:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Epic.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Epic.list"
+  ACL4SSR_Origin:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Origin.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Origin.list"
+  ACL4SSR_Sony:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Sony.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Sony.list"
+  ACL4SSR_Steam:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Steam.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Steam.list"
+  ACL4SSR_Nintendo:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Nintendo.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Nintendo.list"
+  ACL4SSR_YouTube:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_YouTube.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/YouTube.list"
+  ACL4SSR_Netflix:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Netflix.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Netflix.list"
+  ACL4SSR_Bahamut:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Bahamut.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Bahamut.list"
+  ACL4SSR_BilibiliHMT:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_BilibiliHMT.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/BilibiliHMT.list"
+  ACL4SSR_Bilibili:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Bilibili.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/Bilibili.list"
+  ACL4SSR_国内媒体:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_ChinaMedia.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaMedia.list"
+  ACL4SSR_国外媒体:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_ProxyMedia.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ProxyMedia.list"
+  ACL4SSR_代理:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_ProxyGFWlist.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ProxyGFWlist.list"
+  ACL4SSR_中国域名:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_ChinaDomain.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaDomain.list"
+  ACL4SSR_中国公司IP:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_ChinaCompanyIp.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaCompanyIp.list"
+  ACL4SSR_下载:
+    <<: *ACL4SSR
+    path: ./rules/ACL4SSR_Download.list
+    url: "https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Download.list"
 # —————————
 rules:
   - DST-PORT,53,🌐 DNS_Hijack
   - DST-PORT,853,DNS连接
-  - RULE-SET,自定义规则,特殊地址
-  - RULE-SET,WebRTC_端/域,WebRTC
-  - RULE-SET,GoogleFCM_域,GoogleFCM
-  - RULE-SET,YouTube_域,YouTube
-  - RULE-SET,Google_域,Google
-  - RULE-SET,Google_IP,Google,no-resolve
-  - RULE-SET,No-ads-all_域,广告拦截
-  - PROCESS-NAME,com.ss.android.ugc.aweme,抖音
-  - RULE-SET,DouYin_域,抖音
-  - PROCESS-NAME,com.xingin.xhs,小红书
-  - RULE-SET,XiaoHongShu_域,小红书
-  - PROCESS-NAME,tv.danmaku.bili,BiliBili
-  - RULE-SET,BiliBili_域,BiliBili
-  - RULE-SET,BiliBili_IP,BiliBili,no-resolve
-  - RULE-SET,Steam_域,Steam
-  - RULE-SET,GitHub_域,GitHub
-  - RULE-SET,Discord_域,Discord
-  - RULE-SET,TikTok_域,TikTok
-  - RULE-SET,Twitter_域,Twitter(X)
-  - RULE-SET,Twitter_IP,Twitter(X),no-resolve
-  - RULE-SET,Netflix_域,Netflix
-  - RULE-SET,Netflix_IP,Netflix,no-resolve
-  - RULE-SET,Spotify_域,Spotify
-  - RULE-SET,Facebook_域,Facebook
-  - RULE-SET,Facebook_IP,Facebook,no-resolve
-  - RULE-SET,OpenAI_域,OpenAI
-  - RULE-SET,Apple_域,Apple
-  - RULE-SET,Apple_IP,Apple,no-resolve
-  - RULE-SET,Microsoft_域,Microsoft
-  - RULE-SET,Telegram_域,Telegram
-  - RULE-SET,Telegram_IP,Telegram,no-resolve
-  - RULE-SET,Private_域,🌐 本机·本地直连
-  - RULE-SET,Private_IP,🌐 本机·本地直连,no-resolve
-  - RULE-SET,CN_域,🌐 本机·本地直连
-  - RULE-SET,CN_IP,🌐 本机·本地直连
-  - MATCH,漏网之鱼
+  # 本地文件优先级最高，修改后重载配置即可生效
+  - RULE-SET,自定义拒绝,⛔️ 禁止·拒绝连接
+  - RULE-SET,自定义直连,🌐 本机·本地直连
+  - RULE-SET,自定义代理,🚀 节点选择
+  - RULE-SET,ACL4SSR_局域网,🎯 全球直连
+  - RULE-SET,ACL4SSR_白名单,🎯 全球直连
+  - RULE-SET,ACL4SSR_广告,🛑 广告拦截
+  - RULE-SET,ACL4SSR_应用广告,🍃 应用净化
+  - RULE-SET,ACL4SSR_GoogleFCM,📢 谷歌FCM
+  - RULE-SET,ACL4SSR_GoogleCN,🎯 全球直连
+  - RULE-SET,ACL4SSR_SteamCN,🎯 全球直连
+  - RULE-SET,ACL4SSR_Bing,Ⓜ️ 微软Bing
+  - RULE-SET,ACL4SSR_OneDrive,Ⓜ️ 微软云盘
+  - RULE-SET,ACL4SSR_Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,ACL4SSR_Apple,🍎 苹果服务
+  - RULE-SET,ACL4SSR_Telegram,📲 电报消息
+  - RULE-SET,ACL4SSR_AI,💬 Ai平台
+  - RULE-SET,ACL4SSR_OpenAI,💬 Ai平台
+  - RULE-SET,ACL4SSR_NetEaseMusic,🎶 网易音乐
+  - RULE-SET,ACL4SSR_Epic,🎮 游戏平台
+  - RULE-SET,ACL4SSR_Origin,🎮 游戏平台
+  - RULE-SET,ACL4SSR_Sony,🎮 游戏平台
+  - RULE-SET,ACL4SSR_Steam,🎮 游戏平台
+  - RULE-SET,ACL4SSR_Nintendo,🎮 游戏平台
+  - RULE-SET,ACL4SSR_YouTube,📹 油管视频
+  - RULE-SET,ACL4SSR_Netflix,🎥 奈飞视频
+  - RULE-SET,ACL4SSR_Bahamut,📺 巴哈姆特
+  - RULE-SET,ACL4SSR_BilibiliHMT,📺 哔哩哔哩
+  - RULE-SET,ACL4SSR_Bilibili,📺 哔哩哔哩
+  - RULE-SET,ACL4SSR_国内媒体,🌏 国内媒体
+  - RULE-SET,ACL4SSR_国外媒体,🌍 国外媒体
+  - RULE-SET,ACL4SSR_代理,🚀 节点选择
+  - RULE-SET,ACL4SSR_中国域名,🎯 全球直连
+  - RULE-SET,ACL4SSR_中国公司IP,🎯 全球直连,no-resolve
+  - RULE-SET,ACL4SSR_下载,🎯 全球直连
+  - GEOIP,CN,🎯 全球直连,no-resolve
+  - MATCH,🐟 漏网之鱼
+# ==== 用户分流配置结束 ====
 # —————————

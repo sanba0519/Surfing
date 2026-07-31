@@ -33,6 +33,25 @@ jobs:
       - name: Run build.sh
         run: sh build.sh
 
+      - name: Verify module archive
+        run: |
+          archive="Surfing_${TAG_NAME}_release.zip"
+          test -s "$archive"
+          unzip -Z1 "$archive" > archive-files.txt
+          grep -Eq '^\.?/?module\.prop$' archive-files.txt
+          grep -Eq '^\.?/?customize\.sh$' archive-files.txt
+          grep -Eq '^\.?/?META-INF/com/google/android/update-binary$' archive-files.txt
+          grep -Eq '^\.?/?box_bll/clash/config\.yaml$' archive-files.txt
+          echo "Verified module archive: $archive"
+
+      - name: Upload module artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Surfing-${{ env.TAG_NAME }}
+          path: Surfing_${{ env.TAG_NAME }}_release.zip
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Determine Tag Name
         id: tag
         run: echo "TAG_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
